@@ -78,16 +78,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 2rem;
+  /* Sem padding horizontal para que SHELF e botões toquem as bordas */
+  padding: 0.85rem 1.5rem;
   background: var(--header-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--card-border);
+  width: 100%;
 }
 
 .header-brand {
   display: flex;
   align-items: center;
+  /* Garante que o logo fique colado à borda esquerda */
+  flex-shrink: 0;
 }
 
 .shelf-title {
@@ -104,11 +108,12 @@ body {
   line-height: 1;
 }
 
-/* Grupo direito: nav + botão de tema */
+/* Grupo direito: nav + botão de tema — colado à borda direita */
 .header-right-group {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .header-nav {
@@ -157,12 +162,19 @@ body {
 /* ─── LAYOUT GERAL DAS PÁGINAS ───────────────────────────────── */
 .shelf-main-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .page-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem 2rem;
+  /* Preenche TODA a área abaixo do header: largura e altura */
+  flex: 1;
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 /* ─── GRADE DE APLICATIVOS (HOME) ────────────────────────────── */
@@ -171,7 +183,9 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 2rem 1.5rem;
   justify-items: center;
+  align-content: start;
   padding: 1rem 0;
+  width: 100%;
 }
 
 .app-card {
