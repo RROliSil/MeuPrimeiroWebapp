@@ -49,60 +49,64 @@ function App() {
       </header>
 
       <main className="dashboard">
-        <div className="card">
-          <div className="card-header">
-            <span className="status-dot online"></span>
-            <h3>Frontend</h3>
+        <div className="dashboard-row-top">
+          <div className="card">
+            <div className="card-header">
+              <span className="status-dot online"></span>
+              <h3>Frontend</h3>
+            </div>
+            <div className="card-body">
+              <p><strong>Tecnologia:</strong> React 19 + Vite + TypeScript</p>
+              <p><strong>Status:</strong> <span className="text-success">Ativo & Operacional</span></p>
+            </div>
           </div>
-          <div className="card-body">
-            <p><strong>Tecnologia:</strong> React 19 + Vite + TypeScript</p>
-            <p><strong>Status:</strong> <span className="text-success">Ativo & Operacional</span></p>
-          </div>
-        </div>
 
-        <div className="card">
-          <div className="card-header">
-            <span className={`status-dot ${health ? 'online' : loading ? 'pending' : 'offline'}`}></span>
-            <h3>Backend API</h3>
-          </div>
-          <div className="card-body">
-            <p><strong>Tecnologia:</strong> Node.js + Express + TypeScript</p>
-            <p>
-              <strong>Status:</strong>{' '}
-              {loading ? (
-                <span className="text-warning">Conectando...</span>
-              ) : health ? (
-                <span className="text-success">{health.message}</span>
-              ) : (
-                <span className="text-danger">{error || 'Off-line'}</span>
-              )}
-            </p>
-            {health && (
-              <p className="timestamp">
-                <small>Última checagem: {new Date(health.timestamp).toLocaleTimeString()}</small>
+          <div className="card">
+            <div className="card-header">
+              <span className={`status-dot ${health ? 'online' : loading ? 'pending' : 'offline'}`}></span>
+              <h3>Backend API</h3>
+            </div>
+            <div className="card-body">
+              <p><strong>Tecnologia:</strong> Node.js + Express + TypeScript</p>
+              <p>
+                <strong>Status:</strong>{' '}
+                {loading ? (
+                  <span className="text-warning">Conectando...</span>
+                ) : health ? (
+                  <span className="text-success">{health.message}</span>
+                ) : (
+                  <span className="text-danger">{error || 'Off-line'}</span>
+                )}
               </p>
-            )}
-            <button className="btn-refresh" onClick={checkBackendHealth} disabled={loading}>
-              {loading ? 'Verificando...' : 'Reverificar Backend'}
-            </button>
+              {health && (
+                <p className="timestamp">
+                  <small>Última checagem: {new Date(health.timestamp).toLocaleTimeString()}</small>
+                </p>
+              )}
+              <button className="btn-refresh" onClick={checkBackendHealth} disabled={loading}>
+                {loading ? 'Verificando...' : 'Reverificar Backend'}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-header">
-            <span className={`status-dot ${health?.database === 'connected' ? 'online' : 'pending'}`}></span>
-            <h3>Banco de Dados</h3>
-          </div>
-          <div className="card-body">
-            <p><strong>Tecnologia:</strong> PostgreSQL 15 (Alpine)</p>
-            <p>
-              <strong>Status:</strong>{' '}
-              {health?.database === 'connected' ? (
-                <span className="text-success">Conectado</span>
-              ) : (
-                <span className="text-warning">Aguardando Container</span>
-              )}
-            </p>
+        <div className="dashboard-row-bottom">
+          <div className="card">
+            <div className="card-header">
+              <span className={`status-dot ${health?.database === 'connected' ? 'online' : 'pending'}`}></span>
+              <h3>Banco de Dados</h3>
+            </div>
+            <div className="card-body">
+              <p><strong>Tecnologia:</strong> PostgreSQL 15 (Alpine)</p>
+              <p>
+                <strong>Status:</strong>{' '}
+                {health?.database === 'connected' ? (
+                  <span className="text-success">Conectado</span>
+                ) : (
+                  <span className="text-warning">Aguardando Container</span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </main>
