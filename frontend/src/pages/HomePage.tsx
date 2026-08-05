@@ -31,13 +31,6 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="page-container">
-      <div className="home-hero">
-        <h2 className="home-title">Sua Estante de Aplicativos</h2>
-        <p className="home-instructions">
-          💡 Clique em qualquer aplicativo para abrir em uma nova aba. Arraste os ícones para organizar sua tela!
-        </p>
-      </div>
-
       {loading ? (
         <div className="loading-spinner">
           <div className="spinner"></div>
