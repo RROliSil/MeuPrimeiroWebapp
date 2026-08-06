@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header-brand">
-          <img src="/shelf-icon.png" alt="SHELF Logo" className="login-brand-logo" />
+          <img src="/shelf-icon.svg" alt="SHELF Logo" className="login-brand-logo" />
           <h1 className="login-title">SHELF</h1>
           <p className="login-subtitle">
             {isRegister ? 'Crie sua conta para acessar os atalhos' : 'Faça login para acessar os aplicativos'}

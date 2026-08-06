@@ -103,6 +103,13 @@ html, body {
   height: 36px;
   object-fit: contain;
   border-radius: 8px;
+  filter: drop-shadow(0 2px 8px rgba(134, 59, 255, 0.35));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.shelf-header-logo:hover {
+  transform: scale(1.06);
+  filter: drop-shadow(0 4px 12px rgba(134, 59, 255, 0.55));
 }
 
 .shelf-title {
@@ -277,6 +284,12 @@ html, body {
   object-fit: contain;
   margin-bottom: 0.5rem;
   border-radius: 14px;
+  filter: drop-shadow(0 4px 16px rgba(134, 59, 255, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.login-brand-logo:hover {
+  transform: scale(1.05) rotate(-2deg);
 }
 
 .login-title {
