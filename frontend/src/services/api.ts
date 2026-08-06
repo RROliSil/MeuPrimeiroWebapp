@@ -59,6 +59,19 @@ export async function reorderApps(items: { id: number; position: number }[]): Pr
   }
 }
 
+export async function createAppsBatch(apps: AppInput[]): Promise<{ count: number; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/apps/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apps }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Falha ao importar aplicativos em lote');
+  }
+  return data;
+}
+
 /* ==========================================================================
    AUTENTICAÇÃO E USUÁRIOS
    ========================================================================== */

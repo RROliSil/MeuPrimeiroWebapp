@@ -195,6 +195,55 @@ app.post('/api/apps', async (req: Request, res: Response) => {
   }
 });
 
+// Importar múltiplos aplicativos/favoritos em lote (batch)
+app.post('/api/apps/batch', async (req: Request, res: Response) => {
+  const { apps } = req.body as { apps: { name: string; url: string; logo?: string }[] };
+
+  if (!Array.isArray(apps) || apps.length === 0) {
+    return res.status(400).json({ error: 'Nenhum aplicativo para importar.' });
+  }
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const maxPosRes = await client.query('SELECT COALESCE(MAX(position), -1) as max_pos FROM apps;');
+      let currentPos = maxPosRes.rows[0].max_pos + 1;
+
+      const inserted = [];
+      for (const item of apps) {
+        if (!item.name || !item.url) continue;
+
+        let domain = '';
+        try {
+          domain = new URL(item.url).hostname;
+        } catch (e) {
+          domain = '';
+        }
+
+        const logo = item.logo || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '');
+        if (!logo) continue;
+
+        const resInsert = await client.query(
+          'INSERT INTO apps (name, url, logo, position) VALUES ($1, $2, $3, $4) RETURNING *;',
+          [item.name.trim().substring(0, 100), item.url.trim(), logo, currentPos++]
+        );
+        inserted.push(resInsert.rows[0]);
+      }
+      await client.query('COMMIT');
+      res.status(201).json({ message: `${inserted.length} favoritos importados com sucesso!`, count: inserted.length, items: inserted });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('[API] Erro ao importar aplicativos em lote:', error);
+    res.status(500).json({ error: 'Erro ao importar favoritos em lote' });
+  }
+});
+
 // Atualizar a ordem (reorder) dos aplicativos após Drag-and-Drop
 app.put('/api/apps/reorder', async (req: Request, res: Response) => {
   const { items } = req.body as { items: { id: number; position: number }[] };

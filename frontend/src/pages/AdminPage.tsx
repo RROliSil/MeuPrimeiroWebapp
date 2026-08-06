@@ -3,10 +3,12 @@ import type { AppItem } from '../types/app';
 import type { User, UserRole } from '../types/auth';
 import { fetchApps, createApp, updateApp, deleteApp, fetchUsers, updateUserRole } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { BookmarkImporter } from '../components/BookmarkImporter';
 
 export const AdminPage: React.FC = () => {
   const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'apps' | 'users'>('apps');
+  const [showBookmarkImporter, setShowBookmarkImporter] = useState<boolean>(false);
   const [apps, setApps] = useState<AppItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -186,7 +188,16 @@ export const AdminPage: React.FC = () => {
         <>
           {/* FORMULÁRIO DE CADASTRO / EDIÇÃO */}
           <div className="admin-card-box">
-            <h3>{editingId ? '✏️ Editar Aplicativo' : '➕ Adicionar Novo Aplicativo'}</h3>
+            <div className="admin-card-box-header">
+              <h3>{editingId ? '✏️ Editar Aplicativo' : '➕ Adicionar Novo Aplicativo'}</h3>
+              <button
+                type="button"
+                className="btn-star-import"
+                onClick={() => setShowBookmarkImporter(true)}
+              >
+                ⭐ Importar Favoritos do Navegador
+              </button>
+            </div>
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="form-group">
                 <label htmlFor="appName">Nome do App:</label>
@@ -384,6 +395,17 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {showBookmarkImporter && (
+        <BookmarkImporter
+          onSuccess={() => {
+            setShowBookmarkImporter(false);
+            setMessage({ type: 'success', text: 'Favoritos do navegador importados com sucesso!' });
+            loadData();
+          }}
+          onClose={() => setShowBookmarkImporter(false)}
+        />
       )}
     </div>
   );
