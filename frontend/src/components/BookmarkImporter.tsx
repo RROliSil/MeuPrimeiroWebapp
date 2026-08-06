@@ -48,15 +48,18 @@ export const BookmarkImporter: React.FC<BookmarkImporterProps> = ({ onSuccess, o
           const iconAttr = a.getAttribute('icon') || a.getAttribute('ICON') || a.getAttribute('Icon');
 
           let logo = '';
-          if (iconAttr && iconAttr.startsWith('data:image')) {
-            logo = iconAttr;
-          } else {
-            try {
-              const domain = new URL(href).hostname;
-              logo = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-            } catch {
-              logo = '';
+          try {
+            const domain = new URL(href).hostname;
+            if (domain) {
+              // Preferir o serviço de alta resolução da icon.horse
+              logo = `https://icon.horse/icon/${domain}`;
             }
+          } catch {
+            logo = '';
+          }
+
+          if (!logo && iconAttr && iconAttr.startsWith('data:image')) {
+            logo = iconAttr;
           }
 
           if (!logo || seenUrls.has(href)) continue;

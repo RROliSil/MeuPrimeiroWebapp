@@ -221,7 +221,14 @@ app.post('/api/apps/batch', async (req: Request, res: Response) => {
           domain = '';
         }
 
-        const logo = item.logo || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '');
+        // Se a logo for vazia ou for um ícone base64 pequeno, preferir o serviço de ícone HD da icon.horse / Google sz=128
+        let logo = item.logo || '';
+        if (!logo || logo.startsWith('data:image')) {
+          if (domain) {
+            logo = `https://icon.horse/icon/${domain}`;
+          }
+        }
+
         if (!logo) continue;
 
         const resInsert = await client.query(
@@ -241,6 +248,43 @@ app.post('/api/apps/batch', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('[API] Erro ao importar aplicativos em lote:', error);
     res.status(500).json({ error: 'Erro ao importar favoritos em lote' });
+  }
+});
+
+// Otimizar e atualizar todos os ícones cadastrados para alta resolução (HD)
+app.post('/api/apps/optimize-icons', async (req: Request, res: Response) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM apps;');
+    const client = await pool.connect();
+    let updatedCount = 0;
+
+    try {
+      await client.query('BEGIN');
+      for (const appItem of rows) {
+        try {
+          const domain = new URL(appItem.url).hostname;
+          if (domain) {
+            const hdLogo = `https://icon.horse/icon/${domain}`;
+            await client.query('UPDATE apps SET logo = $1 WHERE id = $2;', [hdLogo, appItem.id]);
+            updatedCount++;
+          }
+        } catch (e) {
+          // Ignorar URLs inválidas
+        }
+      }
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+
+    const updatedApps = await pool.query('SELECT * FROM apps ORDER BY position ASC, id ASC;');
+    res.json({ message: `${updatedCount} ícones atualizados para Alta Resolução (HD)!`, items: updatedApps.rows });
+  } catch (error) {
+    console.error('[API] Erro ao otimizar ícones:', error);
+    res.status(500).json({ error: 'Erro ao otimizar ícones para HD' });
   }
 });
 

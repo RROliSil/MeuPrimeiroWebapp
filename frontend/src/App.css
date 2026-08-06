@@ -501,6 +501,34 @@ html, body {
   font-size: 1.3rem;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-hd-optimize {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-hd-optimize:hover {
+  background: rgba(56, 189, 248, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
 .btn-star-import {
   display: flex;
   align-items: center;

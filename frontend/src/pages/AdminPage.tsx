@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { AppItem } from '../types/app';
 import type { User, UserRole } from '../types/auth';
-import { fetchApps, createApp, updateApp, deleteApp, fetchUsers, updateUserRole } from '../services/api';
+import { fetchApps, createApp, updateApp, deleteApp, fetchUsers, updateUserRole, optimizeAppIcons } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { BookmarkImporter } from '../components/BookmarkImporter';
 
@@ -14,6 +14,22 @@ export const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleOptimizeIcons = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await optimizeAppIcons();
+      setMessage({ type: 'success', text: res.message });
+      loadData();
+    } catch (err: unknown) {
+      console.error(err);
+      const errMsg = err instanceof Error ? err.message : 'Erro ao otimizar ícones.';
+      setMessage({ type: 'error', text: errMsg });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // App Form states
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -190,13 +206,23 @@ export const AdminPage: React.FC = () => {
           <div className="admin-card-box">
             <div className="admin-card-box-header">
               <h3>{editingId ? '✏️ Editar Aplicativo' : '➕ Adicionar Novo Aplicativo'}</h3>
-              <button
-                type="button"
-                className="btn-star-import"
-                onClick={() => setShowBookmarkImporter(true)}
-              >
-                ⭐ Importar Favoritos do Navegador
-              </button>
+              <div className="admin-header-actions">
+                <button
+                  type="button"
+                  className="btn-hd-optimize"
+                  onClick={handleOptimizeIcons}
+                  title="Atualizar todos os ícones para alta resolução (HD)"
+                >
+                  ✨ Converter Ícones para HD
+                </button>
+                <button
+                  type="button"
+                  className="btn-star-import"
+                  onClick={() => setShowBookmarkImporter(true)}
+                >
+                  ⭐ Importar Favoritos do Navegador
+                </button>
+              </div>
             </div>
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="form-group">

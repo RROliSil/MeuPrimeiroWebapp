@@ -72,6 +72,17 @@ export async function createAppsBatch(apps: AppInput[]): Promise<{ count: number
   return data;
 }
 
+export async function optimizeAppIcons(): Promise<{ message: string; items: AppItem[] }> {
+  const res = await fetch(`${API_BASE_URL}/apps/optimize-icons`, {
+    method: 'POST',
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Falha ao otimizar ícones para HD');
+  }
+  return data;
+}
+
 /* ==========================================================================
    AUTENTICAÇÃO E USUÁRIOS
    ========================================================================== */
