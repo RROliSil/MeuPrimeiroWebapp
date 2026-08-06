@@ -345,8 +345,11 @@ export const AdminPage: React.FC = () => {
                 </thead>
                 <tbody>
                   {users.map((u) => {
-                    const isMainAdmin = u.username.toLowerCase() === 'admin';
-                    const isSelf = currentUser && u.id === currentUser.id;
+                    const isMainAdmin = u.username.trim().toLowerCase() === 'admin';
+                    const isSelf = currentUser && (
+                      String(u.id) === String(currentUser.id) ||
+                      u.username.trim().toLowerCase() === currentUser.username.trim().toLowerCase()
+                    );
 
                     return (
                       <tr key={u.id}>
