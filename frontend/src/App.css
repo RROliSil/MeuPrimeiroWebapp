@@ -94,7 +94,15 @@ html, body {
 .header-brand {
   display: flex;
   align-items: center;
+  gap: 0.65rem;
   flex-shrink: 0;
+}
+
+.shelf-header-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .shelf-title {
@@ -258,6 +266,17 @@ html, body {
 
 .login-header-brand {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-brand-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+  border-radius: 14px;
 }
 
 .login-title {

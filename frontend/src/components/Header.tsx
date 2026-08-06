@@ -10,6 +10,7 @@ export const Header: React.FC = () => {
   return (
     <header className="shelf-header">
       <div className="header-brand">
+        <img src="/shelf-icon.png" alt="SHELF Logo" className="shelf-header-logo" />
         <h1 className="shelf-title">SHELF</h1>
       </div>
 
