@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import type { AppItem } from '../types/app';
 import type { User, UserRole } from '../types/auth';
 import { fetchApps, createApp, updateApp, deleteApp, fetchUsers, updateUserRole } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const AdminPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'apps' | 'users'>('apps');
   const [apps, setApps] = useState<AppItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -143,9 +145,10 @@ export const AdminPage: React.FC = () => {
       await updateUserRole(userId, newRole);
       setMessage({ type: 'success', text: 'Permissão de usuário atualizada com sucesso!' });
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setMessage({ type: 'error', text: 'Erro ao alterar permissão do usuário.' });
+      const errMsg = err instanceof Error ? err.message : 'Erro ao alterar permissão do usuário.';
+      setMessage({ type: 'error', text: errMsg });
     }
   };
 
@@ -341,27 +344,38 @@ export const AdminPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td>#{u.id}</td>
-                      <td>
-                        <strong>👤 {u.username}</strong>
-                      </td>
-                      <td>
-                        <span className={`user-role-pill ${u.role}`}>
-                          {u.role === 'admin' ? '⚙️ Admin' : '👤 Usuário'}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => handleRoleChange(u.id, u.role)}
-                          className={`btn-action ${u.role === 'admin' ? 'delete' : 'edit'}`}
-                        >
-                          {u.role === 'admin' ? '⬇️ Rebaixar para Usuário' : '⬆️ Promover a Admin'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {users.map((u) => {
+                    const isMainAdmin = u.username.toLowerCase() === 'admin';
+                    const isSelf = currentUser && u.id === currentUser.id;
+
+                    return (
+                      <tr key={u.id}>
+                        <td>#{u.id}</td>
+                        <td>
+                          <strong>👤 {u.username}</strong>
+                        </td>
+                        <td>
+                          <span className={`user-role-pill ${u.role}`}>
+                            {u.role === 'admin' ? '⚙️ Admin' : '👤 Usuário'}
+                          </span>
+                        </td>
+                        <td>
+                          {isMainAdmin ? (
+                            <span className="text-muted text-sm">🔒 Admin Principal</span>
+                          ) : isSelf ? (
+                            <span className="text-muted text-sm">🔒 Seu Perfil</span>
+                          ) : (
+                            <button
+                              onClick={() => handleRoleChange(u.id, u.role)}
+                              className={`btn-action ${u.role === 'admin' ? 'delete' : 'edit'}`}
+                            >
+                              {u.role === 'admin' ? '⬇️ Rebaixar para Usuário' : '⬆️ Promover a Admin'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -31,13 +31,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleAdminQuickFill = () => {
-    setIsRegister(false);
-    setUsername('admin');
-    setPassword('admin1');
-    setError(null);
-  };
-
   return (
     <div className="login-container">
       <div className="login-card">
@@ -103,16 +96,6 @@ export const LoginPage: React.FC = () => {
             {submitting ? 'Aguarde...' : isRegister ? 'Criar Minha Conta' : 'Entrar no Sistema'}
           </button>
         </form>
-
-        <div className="admin-demo-notice">
-          <p>⚡ <strong>Login Primário de Admin:</strong></p>
-          <p className="admin-demo-credentials">
-            Usuário: <code>admin</code> | Senha: <code>admin1</code>
-          </p>
-          <button type="button" className="btn-quick-fill" onClick={handleAdminQuickFill}>
-            Usar Credenciais Admin
-          </button>
-        </div>
       </div>
     </div>
   );

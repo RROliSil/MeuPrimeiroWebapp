@@ -134,6 +134,12 @@ app.put('/api/users/:id/role', async (req: Request, res: Response) => {
   }
 
   try {
+    // Verificar se é o usuário admin principal
+    const userCheck = await pool.query('SELECT username FROM users WHERE id = $1;', [id]);
+    if (userCheck.rows.length > 0 && userCheck.rows[0].username.toLowerCase() === 'admin') {
+      return res.status(400).json({ error: 'O usuário admin principal não pode ter sua permissão alterada.' });
+    }
+
     const updateRes = await pool.query(
       'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role;',
       [role, id]
