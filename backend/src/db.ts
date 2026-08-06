@@ -10,7 +10,7 @@ export const pool = new Pool({
 });
 
 export async function initDb() {
-  const createTableQuery = `
+  const createAppsTableQuery = `
     CREATE TABLE IF NOT EXISTS apps (
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -21,11 +21,34 @@ export async function initDb() {
     );
   `;
 
+  const createUsersTableQuery = `
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(100) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(50) NOT NULL DEFAULT 'user',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
   try {
     const client = await pool.connect();
-    await client.query(createTableQuery);
+    
+    // Criar tabelas
+    await client.query(createAppsTableQuery);
+    await client.query(createUsersTableQuery);
 
-    // Verificar se a tabela está vazia e inserir dados iniciais de demonstração
+    // Verificar e criar usuário admin padrão (admin / admin1)
+    const adminCheck = await client.query('SELECT * FROM users WHERE username = $1;', ['admin']);
+    if (adminCheck.rows.length === 0) {
+      console.log('[DB] Criando usuário admin padrão (admin / admin1)...');
+      await client.query(
+        'INSERT INTO users (username, password, role) VALUES ($1, $2, $3);',
+        ['admin', 'admin1', 'admin']
+      );
+    }
+
+    // Verificar se a tabela de apps está vazia e inserir dados iniciais de demonstração
     const countRes = await client.query('SELECT COUNT(*) FROM apps;');
     if (parseInt(countRes.rows[0].count, 10) === 0) {
       console.log('[DB] Inserindo aplicativos iniciais de exemplo...');
@@ -65,7 +88,7 @@ export async function initDb() {
     }
 
     client.release();
-    console.log('[DB] Tabela "apps" verificada e pronta para uso.');
+    console.log('[DB] Tabelas "apps" e "users" verificadas e prontas para uso.');
   } catch (error) {
     console.error('[DB] Erro ao inicializar o banco de dados:', error);
   }

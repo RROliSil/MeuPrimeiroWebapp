@@ -1,6 +1,11 @@
 import type { AppItem, AppInput } from '../types/app';
+import type { User, UserRole, AuthResponse } from '../types/auth';
 
 const API_BASE_URL = '/api';
+
+/* ==========================================================================
+   APLICATIVOS
+   ========================================================================== */
 
 export async function fetchApps(): Promise<AppItem[]> {
   const res = await fetch(`${API_BASE_URL}/apps`);
@@ -52,4 +57,55 @@ export async function reorderApps(items: { id: number; position: number }[]): Pr
   if (!res.ok) {
     throw new Error('Falha ao atualizar ordenação');
   }
+}
+
+/* ==========================================================================
+   AUTENTICAÇÃO E USUÁRIOS
+   ========================================================================== */
+
+export async function loginUser(username: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao realizar login');
+  }
+  return data;
+}
+
+export async function registerUser(username: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Erro ao registrar usuário');
+  }
+  return data;
+}
+
+export async function fetchUsers(): Promise<User[]> {
+  const res = await fetch(`${API_BASE_URL}/users`);
+  if (!res.ok) {
+    throw new Error('Falha ao carregar lista de usuários');
+  }
+  return res.json();
+}
+
+export async function updateUserRole(id: number, role: UserRole): Promise<User> {
+  const res = await fetch(`${API_BASE_URL}/users/${id}/role`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Falha ao atualizar permissão do usuário');
+  }
+  return data;
 }

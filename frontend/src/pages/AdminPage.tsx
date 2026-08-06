@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import type { AppItem } from '../types/app';
-import { fetchApps, createApp, updateApp, deleteApp } from '../services/api';
+import type { User, UserRole } from '../types/auth';
+import { fetchApps, createApp, updateApp, deleteApp, fetchUsers, updateUserRole } from '../services/api';
 
 export const AdminPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'apps' | 'users'>('apps');
   const [apps, setApps] = useState<AppItem[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Form states
+  // App Form states
   const [editingId, setEditingId] = useState<number | null>(null);
   const [name, setName] = useState<string>('');
   const [url, setUrl] = useState<string>('');
@@ -17,24 +20,24 @@ export const AdminPage: React.FC = () => {
   const [logoBase64, setLogoBase64] = useState<string>('');
   const [previewLogo, setPreviewLogo] = useState<string>('');
 
-  const loadApps = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchApps();
-      setApps(data);
+      const [appsData, usersData] = await Promise.all([fetchApps(), fetchUsers()]);
+      setApps(appsData);
+      setUsers(usersData);
     } catch (err) {
       console.error(err);
-      setMessage({ type: 'error', text: 'Erro ao carregar aplicativos.' });
+      setMessage({ type: 'error', text: 'Erro ao carregar dados do sistema.' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadApps();
+    loadData();
   }, []);
 
-  // Manipular upload de arquivo de imagem de logo
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -88,7 +91,7 @@ export const AdminPage: React.FC = () => {
     try {
       await deleteApp(id);
       setMessage({ type: 'success', text: 'Aplicativo removido com sucesso!' });
-      loadApps();
+      loadData();
     } catch (err) {
       console.error(err);
       setMessage({ type: 'error', text: 'Erro ao excluir o aplicativo.' });
@@ -117,7 +120,7 @@ export const AdminPage: React.FC = () => {
       }
 
       handleCancelEdit();
-      loadApps();
+      loadData();
     } catch (err) {
       console.error(err);
       setMessage({ type: 'error', text: 'Erro ao salvar o aplicativo.' });
@@ -126,11 +129,48 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  const handleRoleChange = async (userId: number, currentRole: UserRole) => {
+    const newRole: UserRole = currentRole === 'admin' ? 'user' : 'admin';
+    if (
+      !window.confirm(
+        `Deseja alterar a permissão do usuário para "${newRole.toUpperCase()}"?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await updateUserRole(userId, newRole);
+      setMessage({ type: 'success', text: 'Permissão de usuário atualizada com sucesso!' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Erro ao alterar permissão do usuário.' });
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="admin-header">
         <h2>⚙️ Painel Administrativo</h2>
-        <p>Gerencie seus links e ícones do SHELF. Adicione, edite ou remova aplicativos.</p>
+        <p>Gerencie aplicativos e controle as permissões dos usuários do SHELF.</p>
+      </div>
+
+      <div className="admin-tab-nav">
+        <button
+          type="button"
+          className={`admin-tab-btn ${activeTab === 'apps' ? 'active' : ''}`}
+          onClick={() => setActiveTab('apps')}
+        >
+          📱 Aplicativos ({apps.length})
+        </button>
+        <button
+          type="button"
+          className={`admin-tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          👥 Usuários e Permissões ({users.length})
+        </button>
       </div>
 
       {message && (
@@ -139,145 +179,195 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* FORMULÁRIO DE CADASTRO / EDIÇÃO */}
-      <div className="admin-card-box">
-        <h3>{editingId ? '✏️ Editar Aplicativo' : '➕ Adicionar Novo Aplicativo'}</h3>
-        <form onSubmit={handleSubmit} className="admin-form">
-          <div className="form-group">
-            <label htmlFor="appName">Nome do App:</label>
-            <input
-              id="appName"
-              type="text"
-              placeholder="Ex: GitHub, Portainer, Notion..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+      {activeTab === 'apps' ? (
+        <>
+          {/* FORMULÁRIO DE CADASTRO / EDIÇÃO */}
+          <div className="admin-card-box">
+            <h3>{editingId ? '✏️ Editar Aplicativo' : '➕ Adicionar Novo Aplicativo'}</h3>
+            <form onSubmit={handleSubmit} className="admin-form">
+              <div className="form-group">
+                <label htmlFor="appName">Nome do App:</label>
+                <input
+                  id="appName"
+                  type="text"
+                  placeholder="Ex: GitHub, Portainer, Notion..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="appUrl">URL do Link:</label>
+                <input
+                  id="appUrl"
+                  type="url"
+                  placeholder="Ex: https://github.com ou http://192.168.2.72:9000"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Logo do App:</label>
+                <div className="logo-mode-selector">
+                  <button
+                    type="button"
+                    className={`mode-btn ${logoMode === 'upload' ? 'active' : ''}`}
+                    onClick={() => setLogoMode('upload')}
+                  >
+                    📁 Anexar Arquivo de Imagem
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${logoMode === 'url' ? 'active' : ''}`}
+                    onClick={() => setLogoMode('url')}
+                  >
+                    🔗 Usar URL de Imagem
+                  </button>
+                </div>
+
+                {logoMode === 'upload' ? (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="file-input"
+                  />
+                ) : (
+                  <input
+                    type="url"
+                    placeholder="Ex: https://exemplo.com/logo.png"
+                    value={logoUrl}
+                    onChange={handleUrlChange}
+                  />
+                )}
+              </div>
+
+              {/* PREVIEW DO LOGO */}
+              {previewLogo && (
+                <div className="logo-preview-box">
+                  <span>Pré-visualização do Ícone:</span>
+                  <div className="preview-card">
+                    <img src={previewLogo} alt="Preview" className="preview-img" />
+                    <span>{name || 'Nome do App'}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving ? 'Salvando...' : editingId ? 'Atualizar App' : 'Cadastrar App'}
+                </button>
+                {editingId && (
+                  <button type="button" className="btn-secondary" onClick={handleCancelEdit}>
+                    Cancelar Edição
+                  </button>
+                )}
+              </div>
+            </form>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="appUrl">URL do Link:</label>
-            <input
-              id="appUrl"
-              type="url"
-              placeholder="Ex: https://github.com ou http://192.168.2.72:9000"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Logo do App:</label>
-            <div className="logo-mode-selector">
-              <button
-                type="button"
-                className={`mode-btn ${logoMode === 'upload' ? 'active' : ''}`}
-                onClick={() => setLogoMode('upload')}
-              >
-                📁 Anexar Arquivo de Imagem
-              </button>
-              <button
-                type="button"
-                className={`mode-btn ${logoMode === 'url' ? 'active' : ''}`}
-                onClick={() => setLogoMode('url')}
-              >
-                🔗 Usar URL de Imagem
-              </button>
-            </div>
-
-            {logoMode === 'upload' ? (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="file-input"
-              />
+          {/* LISTA DE APLICATIVOS EXISTENTES */}
+          <div className="admin-list-section">
+            <h3>📋 Aplicativos Cadastrados</h3>
+            {loading ? (
+              <p>Carregando aplicativos...</p>
+            ) : apps.length === 0 ? (
+              <p className="text-muted">Nenhum aplicativo cadastrado ainda.</p>
             ) : (
-              <input
-                type="url"
-                placeholder="Ex: https://exemplo.com/logo.png"
-                value={logoUrl}
-                onChange={handleUrlChange}
-              />
+              <div className="admin-apps-table-container">
+                <table className="admin-apps-table">
+                  <thead>
+                    <tr>
+                      <th>Logo</th>
+                      <th>Nome</th>
+                      <th>URL</th>
+                      <th>Posição</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apps.map((app) => (
+                      <tr key={app.id}>
+                        <td>
+                          <img src={app.logo} alt={app.name} className="table-logo-img" />
+                        </td>
+                        <td>
+                          <strong>{app.name}</strong>
+                        </td>
+                        <td>
+                          <a href={app.url} target="_blank" rel="noopener noreferrer" className="table-link">
+                            {app.url}
+                          </a>
+                        </td>
+                        <td>{app.position}</td>
+                        <td>
+                          <div className="table-actions">
+                            <button onClick={() => handleEdit(app)} className="btn-action edit">
+                              ✏️ Editar
+                            </button>
+                            <button onClick={() => handleDelete(app.id)} className="btn-action delete">
+                              🗑️ Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-
-          {/* PREVIEW DO LOGO */}
-          {previewLogo && (
-            <div className="logo-preview-box">
-              <span>Pré-visualização do Ícone:</span>
-              <div className="preview-card">
-                <img src={previewLogo} alt="Preview" className="preview-img" />
-                <span>{name || 'Nome do App'}</span>
-              </div>
+        </>
+      ) : (
+        /* LISTA DE USUÁRIOS E PERMISSÕES */
+        <div className="admin-list-section">
+          <h3>👥 Controle de Permissões de Usuários</h3>
+          {loading ? (
+            <p>Carregando usuários...</p>
+          ) : users.length === 0 ? (
+            <p className="text-muted">Nenhum usuário cadastrado.</p>
+          ) : (
+            <div className="admin-apps-table-container">
+              <table className="admin-apps-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nome de Usuário</th>
+                    <th>Permissão (Role)</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td>#{u.id}</td>
+                      <td>
+                        <strong>👤 {u.username}</strong>
+                      </td>
+                      <td>
+                        <span className={`user-role-pill ${u.role}`}>
+                          {u.role === 'admin' ? '⚙️ Admin' : '👤 Usuário'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleRoleChange(u.id, u.role)}
+                          className={`btn-action ${u.role === 'admin' ? 'delete' : 'edit'}`}
+                        >
+                          {u.role === 'admin' ? '⬇️ Rebaixar para Usuário' : '⬆️ Promover a Admin'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-
-          <div className="form-actions">
-            <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Salva...' : editingId ? 'Atualizar App' : 'Cadastrar App'}
-            </button>
-            {editingId && (
-              <button type="button" className="btn-secondary" onClick={handleCancelEdit}>
-                Cancelar Edição
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* LISTA DE APLICATIVOS EXISTENTES */}
-      <div className="admin-list-section">
-        <h3>📋 Aplicativos Cadastrados ({apps.length})</h3>
-        {loading ? (
-          <p>Carregando aplicativos...</p>
-        ) : apps.length === 0 ? (
-          <p className="text-muted">Nenhum aplicativo cadastrado ainda.</p>
-        ) : (
-          <div className="admin-apps-table-container">
-            <table className="admin-apps-table">
-              <thead>
-                <tr>
-                  <th>Logo</th>
-                  <th>Nome</th>
-                  <th>URL</th>
-                  <th>Posição</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {apps.map((app) => (
-                  <tr key={app.id}>
-                    <td>
-                      <img src={app.logo} alt={app.name} className="table-logo-img" />
-                    </td>
-                    <td>
-                      <strong>{app.name}</strong>
-                    </td>
-                    <td>
-                      <a href={app.url} target="_blank" rel="noopener noreferrer" className="table-link">
-                        {app.url}
-                      </a>
-                    </td>
-                    <td>{app.position}</td>
-                    <td>
-                      <div className="table-actions">
-                        <button onClick={() => handleEdit(app)} className="btn-action edit">
-                          ✏️ Editar
-                        </button>
-                        <button onClick={() => handleDelete(app.id)} className="btn-action delete">
-                          🗑️ Excluir
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

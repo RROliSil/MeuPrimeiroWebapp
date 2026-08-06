@@ -46,20 +46,22 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  min-height: 100vh;
   background: var(--bg-gradient);
   background-attachment: fixed;
   color: var(--text-main);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  min-height: 100vh;
-  min-width: 1280px;
   transition: background 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -68,6 +70,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
 }
 
 /* ─── HEADER ─────────────────────────────────────────────────── */
@@ -78,7 +81,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Sem padding horizontal para que SHELF e botões toquem as bordas */
   padding: 0.85rem 1.5rem;
   background: var(--header-bg);
   backdrop-filter: blur(16px);
@@ -90,7 +92,6 @@ body {
 .header-brand {
   display: flex;
   align-items: center;
-  /* Garante que o logo fique colado à borda esquerda */
   flex-shrink: 0;
 }
 
@@ -108,7 +109,7 @@ body {
   line-height: 1;
 }
 
-/* Grupo direito: nav + botão de tema — colado à borda direita */
+/* Grupo direito: nav + perfil + tema + logout */
 .header-right-group {
   display: flex;
   align-items: center;
@@ -142,6 +143,41 @@ body {
   border: 1px solid var(--card-border);
 }
 
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.user-role-pill {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.user-role-pill.admin {
+  background: rgba(139, 92, 246, 0.3);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+}
+
+.user-role-pill.user {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
 .theme-toggle-btn {
   padding: 0.55rem 1.1rem;
   background: var(--card-bg);
@@ -159,6 +195,24 @@ body {
   border-color: var(--accent-cyan);
 }
 
+.logout-btn {
+  padding: 0.55rem 1rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+}
+
 /* ─── LAYOUT GERAL DAS PÁGINAS ───────────────────────────────── */
 .shelf-main-content {
   flex: 1;
@@ -168,13 +222,142 @@ body {
 }
 
 .page-container {
-  /* Preenche TODA a área abaixo do header: largura e altura */
   flex: 1;
   width: 100%;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+
+/* ─── TELA DE LOGIN / CRIAR CONTA ───────────────────────────── */
+.login-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.login-header-brand {
+  text-align: center;
+}
+
+.login-title {
+  margin: 0 0 0.4rem 0;
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  background: var(--accent-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.login-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.login-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.25rem;
+  border-radius: 12px;
+  gap: 0.25rem;
+}
+
+.login-tab-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-tab-btn.active {
+  background: var(--card-hover-bg);
+  color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.login-btn-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  font-size: 1rem;
+}
+
+.admin-demo-notice {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px dashed var(--card-border);
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.admin-demo-notice p {
+  margin: 0;
+}
+
+.admin-demo-credentials code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--accent-cyan);
+  font-weight: bold;
+}
+
+.btn-quick-fill {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.3rem;
+}
+
+.btn-quick-fill:hover {
+  background: var(--accent-cyan);
+  color: #070b19;
 }
 
 /* ─── GRADE DE APLICATIVOS (HOME) ────────────────────────────── */
@@ -214,7 +397,6 @@ body {
   border: 2px dashed var(--accent-cyan);
 }
 
-/* Indicador de arraste - visível só no hover */
 .app-card-drag-indicator {
   position: absolute;
   top: 4px;
@@ -229,7 +411,6 @@ body {
   opacity: 0.7;
 }
 
-/* Container do ícone — sem fundo, apenas o ícone */
 .app-icon-wrapper {
   width: 72px;
   height: 72px;
@@ -247,7 +428,6 @@ body {
   transform: scale(1.06);
 }
 
-/* Imagem do ícone preenche o espaço inteiro sem fundo branco */
 .app-icon-img {
   width: 72px;
   height: 72px;
@@ -255,7 +435,6 @@ body {
   border-radius: 18px;
 }
 
-/* Fallback quando a imagem não carrega */
 .app-icon-fallback {
   width: 72px;
   height: 72px;
@@ -285,6 +464,7 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 24px;
+  width: 100%;
 }
 
 .empty-subtext {
@@ -294,7 +474,7 @@ body {
 
 /* ─── PAINEL ADMINISTRATIVO ──────────────────────────────────── */
 .admin-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .admin-header h2 {
@@ -307,14 +487,46 @@ body {
   margin: 0;
 }
 
+.admin-tab-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 0.75rem;
+}
+
+.admin-tab-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  color: var(--text-main);
+  border-color: var(--accent-cyan);
+}
+
+.admin-tab-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
 .admin-card-box {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 24px;
   padding: 2rem;
   backdrop-filter: blur(12px);
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   box-shadow: var(--shadow-lg);
+  width: 100%;
 }
 
 .admin-card-box h3 {
@@ -341,6 +553,7 @@ body {
 }
 
 .form-group input[type='text'],
+.form-group input[type='password'],
 .form-group input[type='url'] {
   padding: 0.75rem 1rem;
   border-radius: 12px;
@@ -353,6 +566,7 @@ body {
 }
 
 [data-theme='light'] .form-group input[type='text'],
+[data-theme='light'] .form-group input[type='password'],
 [data-theme='light'] .form-group input[type='url'] {
   background: #ffffff;
 }
@@ -449,6 +663,10 @@ body {
 }
 
 /* ─── TABELA ADMIN ───────────────────────────────────────────── */
+.admin-list-section {
+  width: 100%;
+}
+
 .admin-list-section h3 {
   margin-bottom: 1rem;
 }
@@ -458,6 +676,7 @@ body {
   border-radius: 16px;
   border: 1px solid var(--card-border);
   background: var(--card-bg);
+  width: 100%;
 }
 
 .admin-apps-table {
@@ -531,6 +750,7 @@ body {
   border-radius: 12px;
   margin-bottom: 1.5rem;
   font-weight: 600;
+  width: 100%;
 }
 
 .alert-banner.success {
@@ -551,6 +771,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 4rem;
+  width: 100%;
 }
 
 .spinner {

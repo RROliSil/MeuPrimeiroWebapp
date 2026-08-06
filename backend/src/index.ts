@@ -9,7 +9,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-// Aumentar o limite do body-parser para permitir envio de imagens Base64
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -35,6 +34,126 @@ app.get('/api/health', async (req: Request, res: Response) => {
   });
 });
 
+/* ==========================================================================
+   ROTAS DE AUTENTICAÇÃO E USUÁRIOS
+   ========================================================================== */
+
+// Login de usuário
+app.post('/api/auth/login', async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Usuário e senha são obrigatórios.' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, username, password, role FROM users WHERE LOWER(username) = LOWER($1);',
+      [username.trim()]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+    }
+
+    const user = rows[0];
+
+    if (user.password !== password) {
+      return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+    }
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    });
+  } catch (error) {
+    console.error('[API] Erro ao realizar login:', error);
+    res.status(500).json({ error: 'Erro ao realizar login.' });
+  }
+});
+
+// Registro de novo usuário
+app.post('/api/auth/register', async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Usuário e senha são obrigatórios.' });
+  }
+
+  if (username.trim().length < 3) {
+    return res.status(400).json({ error: 'O nome de usuário deve ter pelo menos 3 caracteres.' });
+  }
+
+  if (password.length < 4) {
+    return res.status(400).json({ error: 'A senha deve ter pelo menos 4 caracteres.' });
+  }
+
+  try {
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER($1);',
+      [username.trim()]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Nome de usuário já está em uso.' });
+    }
+
+    const role = 'user'; // Novo registro por padrão é perfil 'user'
+
+    const insertRes = await pool.query(
+      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role;',
+      [username.trim(), password, role]
+    );
+
+    res.status(201).json(insertRes.rows[0]);
+  } catch (error) {
+    console.error('[API] Erro ao registrar usuário:', error);
+    res.status(500).json({ error: 'Erro ao criar conta.' });
+  }
+});
+
+// Listar todos os usuários (para o painel de permissões)
+app.get('/api/users', async (req: Request, res: Response) => {
+  try {
+    const { rows } = await pool.query('SELECT id, username, role, created_at FROM users ORDER BY id ASC;');
+    res.json(rows);
+  } catch (error) {
+    console.error('[API] Erro ao buscar usuários:', error);
+    res.status(500).json({ error: 'Erro ao buscar usuários' });
+  }
+});
+
+// Atualizar permissão/cargo de um usuário (user/admin)
+app.put('/api/users/:id/role', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (role !== 'user' && role !== 'admin') {
+    return res.status(400).json({ error: 'Role deve ser "user" ou "admin".' });
+  }
+
+  try {
+    const updateRes = await pool.query(
+      'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, role;',
+      [role, id]
+    );
+
+    if (updateRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    res.json(updateRes.rows[0]);
+  } catch (error) {
+    console.error('[API] Erro ao alterar papel do usuário:', error);
+    res.status(500).json({ error: 'Erro ao atualizar permissão' });
+  }
+});
+
+/* ==========================================================================
+   ROTAS DE APLICATIVOS
+   ========================================================================== */
+
 // Listar todos os apps ordenados por posição
 app.get('/api/apps', async (req: Request, res: Response) => {
   try {
@@ -55,7 +174,6 @@ app.post('/api/apps', async (req: Request, res: Response) => {
   }
 
   try {
-    // Obter a maior posição atual para colocar o novo app no final
     const maxPosRes = await pool.query('SELECT COALESCE(MAX(position), -1) as max_pos FROM apps;');
     const nextPos = maxPosRes.rows[0].max_pos + 1;
 

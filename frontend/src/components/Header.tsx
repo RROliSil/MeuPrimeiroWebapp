@@ -1,9 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   return (
     <header className="shelf-header">
@@ -12,14 +14,23 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="header-right-group">
-        <nav className="header-nav">
-          <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-            📱 Home
-          </NavLink>
-          <NavLink to="/admin" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-            ⚙️ Painel Admin
-          </NavLink>
-        </nav>
+        {user && user.role === 'admin' && (
+          <nav className="header-nav">
+            <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              📱 Home
+            </NavLink>
+            <NavLink to="/admin" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              ⚙️ Painel Admin
+            </NavLink>
+          </nav>
+        )}
+
+        {user && (
+          <div className="user-badge" title={`Logado como ${user.username} (${user.role})`}>
+            <span className="user-name">👤 {user.username}</span>
+            <span className={`user-role-pill ${user.role}`}>{user.role}</span>
+          </div>
+        )}
 
         <button
           className="theme-toggle-btn"
@@ -29,6 +40,12 @@ export const Header: React.FC = () => {
         >
           {theme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro'}
         </button>
+
+        {user && (
+          <button className="logout-btn" onClick={logout} title="Sair da Conta">
+            🚪 Sair
+          </button>
+        )}
       </div>
     </header>
   );
