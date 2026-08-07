@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { AppItem, AppPingStatus } from '../types/app';
+import type { AppItem } from '../types/app';
 
 interface AppCardProps {
   app: AppItem;
@@ -9,7 +9,6 @@ interface AppCardProps {
   onDrop: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
   onDragEnd: () => void;
   isDragging?: boolean;
-  pingStatus?: AppPingStatus;
 }
 
 export const AppCard: React.FC<AppCardProps> = ({
@@ -20,7 +19,6 @@ export const AppCard: React.FC<AppCardProps> = ({
   onDrop,
   onDragEnd,
   isDragging,
-  pingStatus,
 }) => {
   const [imgError, setImgError] = useState(false);
 
@@ -41,22 +39,9 @@ export const AppCard: React.FC<AppCardProps> = ({
       onClick={handleClick}
       title={`Clique para abrir ${app.name} (${app.url})`}
     >
-      <div className="app-card-header">
-        <div className="app-card-drag-indicator" title="Arraste para organizar">
-          ⋮⋮
-        </div>
-        {pingStatus && (
-          <div className={`ping-badge ping-${pingStatus.status}`} title={pingStatus.status === 'online' ? `Online (${pingStatus.responseTimeMs}ms)` : pingStatus.status === 'checking' ? 'Testando conexão...' : 'Offline'}>
-            <span className="ping-dot"></span>
-            <span className="ping-text">
-              {pingStatus.status === 'checking' && '...'}
-              {pingStatus.status === 'online' && `${pingStatus.responseTimeMs}ms`}
-              {pingStatus.status === 'offline' && 'Off'}
-            </span>
-          </div>
-        )}
+      <div className="app-card-drag-indicator" title="Arraste para organizar">
+        ⋮⋮
       </div>
-
       <div className="app-icon-wrapper">
         {!imgError ? (
           <img
