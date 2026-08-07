@@ -12,3 +12,10 @@ export interface AppInput {
   url: string;
   logo: string;
 }
+
+export interface AppPingStatus {
+  status: 'online' | 'offline' | 'checking';
+  responseTimeMs?: number;
+  statusCode?: number;
+}
+

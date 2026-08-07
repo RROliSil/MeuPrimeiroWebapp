@@ -365,6 +365,75 @@ app.delete('/api/apps/:id', async (req: Request, res: Response) => {
   }
 });
 
+/* ==========================================================================
+   ROTAS DE STATUS E PING DE SERVIÇOS
+   ========================================================================== */
+
+async function pingUrl(targetUrl: string): Promise<{ status: 'online' | 'offline'; responseTimeMs: number; statusCode?: number }> {
+  const start = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    const response = await fetch(targetUrl, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'SHELF-Status-Checker/1.0' },
+    });
+
+    clearTimeout(timeoutId);
+    const responseTimeMs = Date.now() - start;
+
+    // Se o servidor respondeu (mesmo status 401, 403, 302, 200, etc.), o serviço está online
+    const isOnline = response.status < 500;
+
+    return {
+      status: isOnline ? 'online' : 'offline',
+      statusCode: response.status,
+      responseTimeMs,
+    };
+  } catch (error: any) {
+    const responseTimeMs = Date.now() - start;
+    return {
+      status: 'offline',
+      responseTimeMs,
+    };
+  }
+}
+
+// Ping em um aplicativo específico
+app.post('/api/apps/ping', async (req: Request, res: Response) => {
+  const { url } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL é obrigatória.' });
+  }
+
+  const result = await pingUrl(url);
+  res.json({ url, ...result });
+});
+
+// Ping em todos os aplicativos cadastrados
+app.post('/api/apps/ping-all', async (req: Request, res: Response) => {
+  try {
+    const { rows } = await pool.query('SELECT id, url FROM apps ORDER BY position ASC, id ASC;');
+    
+    const pingResults: Record<number, { status: 'online' | 'offline'; responseTimeMs: number; statusCode?: number }> = {};
+
+    await Promise.all(
+      rows.map(async (appItem) => {
+        const result = await pingUrl(appItem.url);
+        pingResults[appItem.id] = result;
+      })
+    );
+
+    res.json(pingResults);
+  } catch (error) {
+    console.error('[API] Erro ao realizar ping em todos os serviços:', error);
+    res.status(500).json({ error: 'Erro ao verificar status dos serviços' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`[Server SHELF] Servidor rodando na porta ${PORT}`);
 });

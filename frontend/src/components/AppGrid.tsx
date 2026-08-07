@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import type { AppItem } from '../types/app';
+import type { AppItem, AppPingStatus } from '../types/app';
 import { AppCard } from './AppCard';
 import { reorderApps } from '../services/api';
 
 interface AppGridProps {
   apps: AppItem[];
   setApps: React.Dispatch<React.SetStateAction<AppItem[]>>;
+  pings?: Record<number, AppPingStatus>;
 }
 
-export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps }) => {
+export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps, pings = {} }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
-    // Define transparência ou classe visual
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
@@ -23,7 +23,6 @@ export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps }) => {
 
     if (draggedIndex === null || draggedIndex === index) return;
 
-    // Realiza a reordenação em tempo real visualmente
     const updatedApps = [...apps];
     const [draggedItem] = updatedApps.splice(draggedIndex, 1);
     updatedApps.splice(index, 0, draggedItem);
@@ -36,7 +35,6 @@ export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps }) => {
     e.preventDefault();
     setDraggedIndex(null);
 
-    // Mapeia novas posições e salva no banco de dados via API
     const itemsToUpdate = apps.map((app, idx) => ({
       id: app.id,
       position: idx,
@@ -52,7 +50,6 @@ export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps }) => {
   const handleDragEnd = async () => {
     if (draggedIndex !== null) {
       setDraggedIndex(null);
-      // Garante persistência
       const itemsToUpdate = apps.map((app, idx) => ({
         id: app.id,
         position: idx,
@@ -86,6 +83,7 @@ export const AppGrid: React.FC<AppGridProps> = ({ apps, setApps }) => {
           onDrop={handleDrop}
           onDragEnd={handleDragEnd}
           isDragging={draggedIndex === index}
+          pingStatus={pings[app.id]}
         />
       ))}
     </div>

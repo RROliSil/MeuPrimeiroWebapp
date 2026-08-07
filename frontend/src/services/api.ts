@@ -83,6 +83,28 @@ export async function optimizeAppIcons(): Promise<{ message: string; items: AppI
   return data;
 }
 
+export async function pingAppUrl(url: string): Promise<{ url: string; status: 'online' | 'offline'; responseTimeMs: number; statusCode?: number }> {
+  const res = await fetch(`${API_BASE_URL}/apps/ping`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    throw new Error('Falha ao verificar status do serviço');
+  }
+  return res.json();
+}
+
+export async function pingAllApps(): Promise<Record<number, { status: 'online' | 'offline'; responseTimeMs: number; statusCode?: number }>> {
+  const res = await fetch(`${API_BASE_URL}/apps/ping-all`, {
+    method: 'POST',
+  });
+  if (!res.ok) {
+    throw new Error('Falha ao verificar status de todos os serviços');
+  }
+  return res.json();
+}
+
 /* ==========================================================================
    AUTENTICAÇÃO E USUÁRIOS
    ========================================================================== */

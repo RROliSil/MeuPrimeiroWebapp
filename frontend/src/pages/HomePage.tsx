@@ -1,12 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import type { AppItem } from '../types/app';
-import { fetchApps } from '../services/api';
+import React, { useEffect, useState, useCallback } from 'react';
+import type { AppItem, AppPingStatus } from '../types/app';
+import { fetchApps, pingAllApps } from '../services/api';
 import { AppGrid } from '../components/AppGrid';
 
 export const HomePage: React.FC = () => {
   const [apps, setApps] = useState<AppItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [pings, setPings] = useState<Record<number, AppPingStatus>>({});
+  const [checkingPings, setCheckingPings] = useState<boolean>(false);
+
+  const checkStatus = useCallback(async (currentApps: AppItem[]) => {
+    if (currentApps.length === 0) return;
+
+    setCheckingPings(true);
+
+    // Marca todos como "checking" inicialmente
+    const initialChecking: Record<number, AppPingStatus> = {};
+    currentApps.forEach((app) => {
+      initialChecking[app.id] = { status: 'checking' };
+    });
+    setPings(initialChecking);
+
+    try {
+      const results = await pingAllApps();
+      setPings(results);
+    } catch (err) {
+      console.error('Erro ao checar status dos serviços:', err);
+    } finally {
+      setCheckingPings(false);
+    }
+  }, []);
 
   const loadApps = async () => {
     setLoading(true);
@@ -14,6 +38,7 @@ export const HomePage: React.FC = () => {
     try {
       const data = await fetchApps();
       setApps(data);
+      checkStatus(data);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -42,7 +67,20 @@ export const HomePage: React.FC = () => {
           <button onClick={loadApps} className="btn-secondary">Tentar Novamente</button>
         </div>
       ) : (
-        <AppGrid apps={apps} setApps={setApps} />
+        <>
+          <div className="status-bar">
+            <button
+              onClick={() => checkStatus(apps)}
+              className={`btn-ping ${checkingPings ? 'checking' : ''}`}
+              disabled={checkingPings}
+              title="Testar status de conexão de todas as aplicações"
+            >
+              <span className="ping-icon">📡</span>
+              {checkingPings ? 'Verificando serviços...' : 'Verificar Status dos Serviços'}
+            </button>
+          </div>
+          <AppGrid apps={apps} setApps={setApps} pings={pings} />
+        </>
       )}
     </div>
   );

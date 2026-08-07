@@ -387,14 +387,120 @@ html, body {
   border: 2px dashed var(--accent-cyan);
 }
 
-.app-card-drag-indicator {
+/* ─── STATUS BAR & PING BADGES ───────────────────────────────── */
+.status-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+
+.btn-ping {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.btn-ping:hover:not(:disabled) {
+  border-color: var(--accent-blue);
+  background: var(--card-hover-bg);
+  transform: translateY(-1px);
+}
+
+.btn-ping.checking {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.btn-ping.checking .ping-icon {
+  animation: pulse-ping 1s infinite alternate;
+}
+
+@keyframes pulse-ping {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+.app-card-header {
   position: absolute;
-  top: 4px;
-  right: 8px;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ping-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+}
+
+.ping-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ping-online {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #22c55e;
+}
+
+.ping-online .ping-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+}
+
+.ping-offline {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+}
+
+.ping-offline .ping-dot {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+}
+
+.ping-checking {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #eab308;
+}
+
+.ping-checking .ping-dot {
+  background: #eab308;
+  animation: pulse-ping 0.8s infinite alternate;
+}
+
+.app-card-drag-indicator {
   font-size: 0.8rem;
   color: var(--text-muted);
   opacity: 0;
   transition: opacity 0.2s ease;
+  margin-left: auto;
 }
 
 .app-card:hover .app-card-drag-indicator {
