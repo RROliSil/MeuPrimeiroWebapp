@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SearchProvider } from './context/SearchContext';
 import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { AdminPage } from './pages/AdminPage';
@@ -57,9 +58,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <SearchProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </SearchProvider>
       </AuthProvider>
     </ThemeProvider>
   );

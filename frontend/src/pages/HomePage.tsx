@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import type { AppItem } from '../types/app';
 import { fetchApps } from '../services/api';
 import { AppGrid } from '../components/AppGrid';
+import { useSearch } from '../context/SearchContext';
 
 export const HomePage: React.FC = () => {
   const [apps, setApps] = useState<AppItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { searchQuery, clearSearch } = useSearch();
 
   const loadApps = async () => {
     setLoading(true);
@@ -29,6 +31,12 @@ export const HomePage: React.FC = () => {
     loadApps();
   }, []);
 
+  const filteredApps = apps.filter((app) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    return app.name.toLowerCase().includes(query) || app.url.toLowerCase().includes(query);
+  });
+
   return (
     <div className="page-container">
       {loading ? (
@@ -41,8 +49,13 @@ export const HomePage: React.FC = () => {
           <p>❌ {error}</p>
           <button onClick={loadApps} className="btn-secondary">Tentar Novamente</button>
         </div>
+      ) : filteredApps.length === 0 && searchQuery ? (
+        <div className="empty-search-box">
+          <p>🔍 Nenhum aplicativo encontrado para "<strong>{searchQuery}</strong>".</p>
+          <button onClick={clearSearch} className="btn-secondary">Limpar busca</button>
+        </div>
       ) : (
-        <AppGrid apps={apps} setApps={setApps} />
+        <AppGrid apps={filteredApps} setApps={setApps} />
       )}
     </div>
   );

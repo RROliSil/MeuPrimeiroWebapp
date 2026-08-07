@@ -1,25 +1,44 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useSearch } from '../context/SearchContext';
 
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { searchQuery, setSearchQuery, clearSearch } = useSearch();
 
   return (
     <header className="shelf-header">
       <div className="header-brand">
-        <img src="/shelf-icon.svg" alt="SHELF Logo" className="shelf-header-logo" />
+        <Link to="/" onClick={clearSearch} title="Ir para a página inicial">
+          <img src="/shelf-icon.svg" alt="SHELF Logo" className="shelf-header-logo" />
+        </Link>
         <h1 className="shelf-title">SHELF</h1>
       </div>
+
+      {user && (
+        <div className="header-search-container">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            className="header-search-input"
+            placeholder="Buscar aplicativo..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="search-clear-btn" onClick={clearSearch} title="Limpar busca">
+              ✕
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="header-right-group">
         {user && user.role === 'admin' && (
           <nav className="header-nav">
-            <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-              📱 Home
-            </NavLink>
             <NavLink to="/admin" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
               ⚙️ Painel Admin
             </NavLink>
@@ -34,12 +53,12 @@ export const Header: React.FC = () => {
         )}
 
         <button
-          className="theme-toggle-btn"
+          className="theme-toggle-btn icon-only"
           onClick={toggleTheme}
           title={`Alternar para modo ${theme === 'dark' ? 'claro' : 'escuro'}`}
           aria-label="Alternar Tema"
         >
-          {theme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro'}
+          {theme === 'dark' ? '☀️' : '🌙'}
         </button>
 
         {user && (

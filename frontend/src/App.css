@@ -195,6 +195,88 @@ html, body {
   border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
+/* ─── BARRA DE BUSCA NO HEADER ───────────────────────────── */
+.header-search-container {
+  flex: 1;
+  max-width: 380px;
+  margin: 0 1.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.85rem;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.header-search-input {
+  width: 100%;
+  padding: 0.55rem 2.2rem 0.55rem 2.3rem;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+[data-theme='light'] .header-search-input {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.header-search-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  background: var(--card-hover-bg);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 0.6rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.empty-search-box {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.empty-search-box p {
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+}
+
+.theme-toggle-btn.icon-only {
+  padding: 0.55rem 0.75rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .theme-toggle-btn {
   padding: 0.55rem 1.1rem;
   background: var(--card-bg);
